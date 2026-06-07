@@ -390,6 +390,36 @@ hr { border: none; border-top: 1px solid var(--rule); }
   border: 2.5px solid var(--rule);
 }
 
+/* ─── Gradient cards (whole-card gradient with pattern overlay) ───────────── */
+.gradient-card .card-name { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+.gradient-card .card-tagline { color: rgba(255,255,255,0.92); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.gradient-card .card-collection { color: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.gradient-card .card-image {
+  border-color: rgba(255,255,255,0.75);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.gradient-card .card-initial {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.6);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Auto dark text on light-coloured gradient cards */
+.gradient-card.light-surface .card-name { color: #1a1a1a; text-shadow: none; }
+.gradient-card.light-surface .card-tagline { color: rgba(0,0,0,0.7); text-shadow: none; }
+.gradient-card.light-surface .card-collection { color: rgba(0,0,0,0.6); text-shadow: none; }
+.gradient-card.light-surface .card-image {
+  border-color: rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.gradient-card.light-surface .card-initial {
+  background: rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.25);
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
 .card-info { text-align: center; width: 100%; }
 .card-name {
   font-weight: 700;

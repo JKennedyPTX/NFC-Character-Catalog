@@ -132,6 +132,25 @@ function accentSurfaceTint(theme, alphaHex = '22') {
   return `linear-gradient(${g.angle}deg, ${g.stops.map(s => s + alphaHex).join(', ')})`
 }
 
+// Perceived brightness (0–255) of a #rrggbb colour, via the YIQ formula.
+function hexLuminance(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '')
+  if (!m) return 128
+  const h = m[1]
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000
+}
+
+// Is the theme's decorative surface light enough to need dark text?
+function isLightSurface(theme) {
+  const g = themeGradient(theme)
+  const cols = g ? g.stops : [theme?.accent || DEFAULT_THEME.accent]
+  const avg = cols.reduce((sum, c) => sum + hexLuminance(c), 0) / cols.length
+  return avg > 150
+}
+
 // ─── Theming ──────────────────────────────────────────────────────────────────
 
 function hexToHsl(hex) {
@@ -611,21 +630,22 @@ function SpecimenCard({ entry, settings, onClick }) {
   const { name, images, tagline, collection } = entry
   const theme = resolveTheme(entry, settings)
   const cover = images?.[0]
-  const bg = patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.06, theme.patternScale ?? 1)
+  // The whole card is the gradient, with the pattern (in the primary colour) layered on top.
+  const pattern = patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.12, theme.patternScale ?? 1)
+  const cardBg = [pattern !== 'none' ? pattern : null, accentSurface(theme)].filter(Boolean).join(', ')
   return (
     <div
-      className="specimen-card"
+      className={`specimen-card gradient-card ${isLightSurface(theme) ? 'light-surface' : ''}`}
       onClick={onClick}
-      style={{ '--entry-accent': theme.accent, background: bg !== 'none' ? bg : undefined }}
+      style={{ '--entry-accent': theme.accent, background: cardBg }}
     >
-      <div className="card-accent-bar" style={{ background: accentSurface(theme) }} />
       <div className="card-body">
         {cover
           ? <div className="card-image-wrap">
               <img src={cover} alt={name} className="card-image" />
               {images.length > 1 && <span className="card-img-count">{images.length}</span>}
             </div>
-          : <div className="card-initial" style={{ background: accentSurface(theme) }}>{initialOf(name)}</div>}
+          : <div className="card-initial">{initialOf(name)}</div>}
         <div className="card-info">
           <div className="card-name">{name}</div>
           {tagline && <div className="card-tagline">{tagline}</div>}

@@ -40,7 +40,7 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 9. **NFC write tab** — on Chrome for Android (HTTPS) each entry shows a "Write tag" button; elsewhere a graceful "not available" notice with copyable URLs.
 10. **Multi-image gallery** — add 2+ images, reorder (first is Cover), save; confirm thumbnails + lightbox on the entry page and a count badge on the card.
 11. **Collection theming** — set a theme in the Collections tab, then enable "Use collection theme" on an entry; confirm it adopts the collection's colours.
-11b. **Theme gradients & patterns** — in any theme editor, add 2+ gradient colours and adjust the angle; confirm the card accent bar, no-image initial circle, and entry hero render the gradient (text, QR, pattern, and palette stay on the primary colour). Pick a background pattern and adjust its size and opacity sliders; confirm the change on the card and entry hero.
+11b. **Theme gradients & patterns** — in any theme editor, add 2+ gradient colours and adjust the angle; confirm the whole entry card renders the gradient (with the pattern overlaid in the primary colour and white text), and the entry hero shows it too. Text, QR, pattern colour, and palette stay on the primary colour. Pick a background pattern and adjust its size and opacity sliders; confirm the change on the card and entry hero. Adding a cover photo should leave the gradient clearly visible around it. Card text auto-switches between white and dark based on the gradient's brightness for legibility.
 12. **JSON import** — Settings → Import JSON to push an exported catalog into the backend.
 
 ## Recently added
