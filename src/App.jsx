@@ -1220,6 +1220,24 @@ function PublicEntryView({ id, darkMode }) {
 
 const isUuid = s => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s || '')
 
+const SORT_OPTIONS = [
+  { value: 'name-asc',   label: 'Name A–Z' },
+  { value: 'name-desc',  label: 'Name Z–A' },
+  { value: 'newest',     label: 'Newest first' },
+  { value: 'oldest',     label: 'Oldest first' },
+  { value: 'collection', label: 'Collection' },
+  { value: 'code',       label: 'Code' },
+]
+
+const SORTERS = {
+  'name-asc':   (a, b) => a.name.localeCompare(b.name),
+  'name-desc':  (a, b) => b.name.localeCompare(a.name),
+  'newest':     (a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''),
+  'oldest':     (a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''),
+  'collection': (a, b) => (a.collection || '').localeCompare(b.collection || '') || a.name.localeCompare(b.name),
+  'code':       (a, b) => (a.code || '').localeCompare(b.code || '', undefined, { numeric: true }) || a.name.localeCompare(b.name),
+}
+
 export default function App() {
   const [session, setSession]       = useState(null)
   const [sessionLoading, setSessionLoading] = useState(true)
@@ -1231,6 +1249,8 @@ export default function App() {
   const [route, setRoute]           = useState(() => parseRoute(window.location.hash))
   const [activeFolder, setActiveFolder] = useState(null)
   const [search, setSearch]         = useState('')
+  const [sortBy, setSortBy]         = useState('name-asc')
+  const [imageFilter, setImageFilter] = useState('all')
   const [showAdmin, setShowAdmin]   = useState(false)
   const [adminEditId, setAdminEditId] = useState(null)
   const [adminStartNew, setAdminStartNew] = useState(false)
@@ -1331,22 +1351,27 @@ export default function App() {
       }
       map[e.collection].count++
     })
-    return Object.values(map)
+    return Object.values(map).sort((a, b) => a.name.localeCompare(b.name))
   }, [entries, settings])
 
-  const filteredEntries = useMemo(() => entries.filter(e => {
-    if (activeFolder && e.collection !== activeFolder) return false
-    if (search) {
-      const q = search.toLowerCase()
-      return (
-        e.name.toLowerCase().includes(q) ||
-        e.collection.toLowerCase().includes(q) ||
-        (e.tagline || '').toLowerCase().includes(q) ||
-        (e.code || '').toLowerCase().includes(q)
-      )
-    }
-    return true
-  }), [entries, activeFolder, search])
+  const filteredEntries = useMemo(() => {
+    const out = entries.filter(e => {
+      if (activeFolder && e.collection !== activeFolder) return false
+      if (imageFilter === 'with' && !(e.images?.length)) return false
+      if (imageFilter === 'without' && e.images?.length) return false
+      if (search) {
+        const q = search.toLowerCase()
+        return (
+          e.name.toLowerCase().includes(q) ||
+          e.collection.toLowerCase().includes(q) ||
+          (e.tagline || '').toLowerCase().includes(q) ||
+          (e.code || '').toLowerCase().includes(q)
+        )
+      }
+      return true
+    })
+    return out.sort(SORTERS[sortBy] || SORTERS['name-asc'])
+  }, [entries, activeFolder, search, imageFilter, sortBy])
 
   function openEditForEntry(id) { setAdminEditId(id); setShowAdmin(true) }
   function openNewEntry() { setAdminEditId(null); setAdminStartNew(true); setShowAdmin(true) }
@@ -1405,6 +1430,20 @@ export default function App() {
               </button>
             </div>
             <FolderDrawer collections={collections} activeFolder={activeFolder} onSelect={setActiveFolder} />
+            <div className="home-controls">
+              <label className="control-select">Sort
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                  {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </label>
+              <label className="control-select">Images
+                <select value={imageFilter} onChange={e => setImageFilter(e.target.value)}>
+                  <option value="all">All</option>
+                  <option value="with">With image</option>
+                  <option value="without">Without image</option>
+                </select>
+              </label>
+            </div>
             {dataLoading ? (
               <CenterLoader label="Loading catalog…" />
             ) : dataError ? (

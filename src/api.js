@@ -17,6 +17,7 @@ function fromRow(row) {
     theme: row.theme || { accent: '#4a7c59', tintHue: 120, pattern: 'plain' },
     inheritTheme: !!row.inherit_theme,
     links: Array.isArray(row.links) ? row.links : [],
+    createdAt: row.created_at || '',
   }
 }
 

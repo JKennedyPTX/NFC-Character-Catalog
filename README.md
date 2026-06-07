@@ -34,7 +34,8 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 4. **Edit / delete** — edit an entry's tagline and save; delete an entry and confirm it disappears.
 5. **Public entry link** — open an entry, copy its `…#/e/<token>` link, and open it in an incognito window. It should show that one entry, read-only, with no nav, login, or NFC URL/QR code (those are admin-only).
 6. **No enumeration** — in incognito, visit the site root; you should get the login screen with no way to browse entries.
-7. **Search & collection filter** — confirm search and the folder drawer narrow the grid.
+7. **Search & collection filter** — confirm search and the folder drawer narrow the grid. The collection tabs are alphabetised.
+7b. **Sort & image filter** — use the Sort dropdown (Name A–Z/Z–A, Newest/Oldest, Collection, Code) and confirm the grid reorders, both on "All" and within a collection. Use the Images filter to show only entries with or without a photo.
 8. **QR code (admin only)** — on the admin entry page, "Show QR code" renders a QR in the accent colour; "Download PNG" saves it; scanning opens the entry. The URL/QR are hidden on the public scanned view.
 9. **NFC write tab** — on Chrome for Android (HTTPS) each entry shows a "Write tag" button; elsewhere a graceful "not available" notice with copyable URLs.
 10. **Multi-image gallery** — add 2+ images, reorder (first is Cover), save; confirm thumbnails + lightbox on the entry page and a count badge on the card.
