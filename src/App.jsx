@@ -1014,13 +1014,13 @@ function CollectionThemesTab({ entries, settings, onSaveTheme, onDeleteTheme }) 
 
 const TAB_LABELS = { entries: 'Entries', import: 'Import', nfc: 'NFC', collections: 'Collections', settings: 'Settings' }
 
-function AdminPanel({ entries, settings, onSaveEntry, onDeleteEntry, onImportEntries, onSaveTheme, onDeleteTheme, onSaveSettings, onClose, initialEditId }) {
+function AdminPanel({ entries, settings, onSaveEntry, onDeleteEntry, onImportEntries, onSaveTheme, onDeleteTheme, onSaveSettings, onClose, initialEditId, startNew }) {
   const [tab, setTab] = useState('entries')
   const [editEntry, setEditEntry] = useState(() => {
     if (initialEditId) return entries.find(e => e.id === initialEditId) || null
     return null
   })
-  const [isNew, setIsNew] = useState(false)
+  const [isNew, setIsNew] = useState(!!startNew)
 
   function openNew() { setIsNew(true); setEditEntry(null) }
   function openEdit(entry) { setIsNew(false); setEditEntry(entry) }
@@ -1233,6 +1233,7 @@ export default function App() {
   const [search, setSearch]         = useState('')
   const [showAdmin, setShowAdmin]   = useState(false)
   const [adminEditId, setAdminEditId] = useState(null)
+  const [adminStartNew, setAdminStartNew] = useState(false)
 
   // Hash routing
   useEffect(() => {
@@ -1348,7 +1349,8 @@ export default function App() {
   }), [entries, activeFolder, search])
 
   function openEditForEntry(id) { setAdminEditId(id); setShowAdmin(true) }
-  function closeAdmin() { setShowAdmin(false); setAdminEditId(null) }
+  function openNewEntry() { setAdminEditId(null); setAdminStartNew(true); setShowAdmin(true) }
+  function closeAdmin() { setShowAdmin(false); setAdminEditId(null); setAdminStartNew(false) }
 
   // ── Render branches ──
 
@@ -1385,17 +1387,22 @@ export default function App() {
       <main className="app-main">
         {route.page !== 'entry' && (
           <div className="home-page">
-            <div className="search-wrap">
-              <Search size={16} className="search-icon"/>
-              <input
-                className="search-input"
-                placeholder="Search entries…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button className="search-clear" onClick={() => setSearch('')}><X size={14}/></button>
-              )}
+            <div className="home-toolbar">
+              <div className="search-wrap">
+                <Search size={16} className="search-icon"/>
+                <input
+                  className="search-input"
+                  placeholder="Search entries…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                {search && (
+                  <button className="search-clear" onClick={() => setSearch('')}><X size={14}/></button>
+                )}
+              </div>
+              <button className="btn-new-entry" onClick={openNewEntry}>
+                <Plus size={16}/> New entry
+              </button>
             </div>
             <FolderDrawer collections={collections} activeFolder={activeFolder} onSelect={setActiveFolder} />
             {dataLoading ? (
@@ -1441,6 +1448,7 @@ export default function App() {
               onSaveSettings={handleSaveSettings}
               onClose={closeAdmin}
               initialEditId={adminEditId}
+              startNew={adminStartNew}
             />
           </div>
         </div>
