@@ -30,7 +30,7 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 
 1. **Login gate** — visit the site logged out; you should see a login screen, not the catalog.
 2. **Sign in** — log in with your Supabase admin user; the catalog grid appears.
-3. **Add entry** — open Manage (⚙), "New entry", fill in name/collection, pick a theme, add an image, and save. Confirm it uploads and appears in the grid.
+3. **Add entry** — open Manage (⚙), "New entry", fill in name/collection (the Collection field autofills your existing collection names), pick a theme, add an image, and save. Confirm it uploads and appears in the grid. Entries without an image show their first initial in an accent-coloured circle.
 4. **Edit / delete** — edit an entry's tagline and save; delete an entry and confirm it disappears.
 5. **Public entry link** — open an entry, copy its `…#/e/<token>` link, and open it in an incognito window. It should show that one entry, read-only, with no nav, login, or NFC URL/QR code (those are admin-only).
 6. **No enumeration** — in incognito, visit the site root; you should get the login screen with no way to browse entries.

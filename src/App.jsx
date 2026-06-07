@@ -238,6 +238,11 @@ function toSlug(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 }
 
+function initialOf(name) {
+  const c = (name || '').trim().charAt(0)
+  return c ? c.toUpperCase() : '?'
+}
+
 function uniqueSlug(base, existing) {
   if (!existing.includes(base)) return base
   let i = 2
@@ -425,7 +430,7 @@ function LinkManager({ links, onChange }) {
 
 // ─── EntryForm ────────────────────────────────────────────────────────────────
 
-function EntryForm({ initial, settings, onSave, onCancel }) {
+function EntryForm({ initial, settings, collectionNames, onSave, onCancel }) {
   const [form, setForm] = useState(() => normalizeEntry(initial ? { ...BLANK_ENTRY, ...initial } : { ...BLANK_ENTRY }))
   const [saving, setSaving] = useState(false)
   const hasCollectionTheme = !!settings?.collectionThemes?.[form.collection]
@@ -454,8 +459,13 @@ function EntryForm({ initial, settings, onSave, onCancel }) {
       <div className="form-grid-2">
         <label>Name *<input value={form.name} onChange={e => set('name', e.target.value)} /></label>
         <label>Code<input value={form.code} onChange={e => set('code', e.target.value)} /></label>
-        <label>Collection<input value={form.collection} onChange={e => set('collection', e.target.value)} /></label>
-        <label>Emoji<input value={form.emoji} onChange={e => set('emoji', e.target.value)} maxLength={2} style={{width:'4rem'}}/></label>
+        <label>Collection
+          <input list="collection-options" value={form.collection}
+            onChange={e => set('collection', e.target.value)} placeholder="Type or pick…" />
+          <datalist id="collection-options">
+            {(collectionNames || []).map(c => <option key={c} value={c} />)}
+          </datalist>
+        </label>
         <label>Tagline<input value={form.tagline} onChange={e => set('tagline', e.target.value)} /></label>
       </div>
       <label>Description
@@ -492,7 +502,7 @@ function EntryForm({ initial, settings, onSave, onCancel }) {
 // ─── SpecimenCard ─────────────────────────────────────────────────────────────
 
 function SpecimenCard({ entry, settings, onClick }) {
-  const { name, emoji, images, tagline, collection } = entry
+  const { name, images, tagline, collection } = entry
   const theme = resolveTheme(entry, settings)
   const cover = images?.[0]
   const bg = patternBackground(theme.pattern, theme.accent, 0.06)
@@ -509,7 +519,7 @@ function SpecimenCard({ entry, settings, onClick }) {
               <img src={cover} alt={name} className="card-image" />
               {images.length > 1 && <span className="card-img-count">{images.length}</span>}
             </div>
-          : <div className="card-emoji">{emoji}</div>}
+          : <div className="card-initial" style={{ background: theme.accent }}>{initialOf(name)}</div>}
         <div className="card-info">
           <div className="card-name">{name}</div>
           {tagline && <div className="card-tagline">{tagline}</div>}
@@ -604,15 +614,15 @@ function QRCodeBlock({ url, accent, name }) {
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
 
-function Gallery({ images, emoji, name, accent }) {
+function Gallery({ images, name, accent }) {
   const [index, setIndex] = useState(0)
   const [lightbox, setLightbox] = useState(false)
   const safeIndex = Math.min(index, Math.max(images.length - 1, 0))
 
   if (!images || images.length === 0) {
     return (
-      <div className="entry-image-plate" style={{ borderColor: accent }}>
-        <div className="entry-emoji-large">{emoji}</div>
+      <div className="entry-image-plate" style={{ borderColor: accent, background: accent }}>
+        <div className="entry-initial">{initialOf(name)}</div>
       </div>
     )
   }
@@ -656,7 +666,7 @@ function Gallery({ images, emoji, name, accent }) {
 // ─── EntryPage ────────────────────────────────────────────────────────────────
 
 function EntryPage({ entry, settings, onEdit }) {
-  const { name, emoji, images, tagline, description, collection, code, links } = entry
+  const { name, images, tagline, description, collection, code, links } = entry
   const theme = resolveTheme(entry, settings)
 
   return (
@@ -665,7 +675,7 @@ function EntryPage({ entry, settings, onEdit }) {
         background: `linear-gradient(150deg, ${theme.accent}18 0%, ${theme.accent}38 100%)`,
         borderBottom: `4px solid ${theme.accent}`
       }}>
-        <Gallery images={images} emoji={emoji} name={name} accent={theme.accent} />
+        <Gallery images={images} name={name} accent={theme.accent} />
         <div className="entry-hero-text">
           {code && <div className="entry-code">{code}</div>}
           <h1 className="entry-name">{name}</h1>
@@ -719,7 +729,7 @@ function EntryPage({ entry, settings, onEdit }) {
 
 // ─── SpreadsheetImporter ──────────────────────────────────────────────────────
 
-const IMPORT_FIELDS = ['name','id','code','collection','emoji','tagline','description','accentColor','imageUrl']
+const IMPORT_FIELDS = ['name','id','code','collection','tagline','description','accentColor','imageUrl']
 
 function SpreadsheetImporter({ existingIds, onImport }) {
   const [rows, setRows] = useState(null)
@@ -915,7 +925,7 @@ function NfcWriter({ entries, settings }) {
         <div className="nfc-url-list">
           {entries.map(e => (
             <div key={e.id} className="nfc-url-row">
-              <span className="nfc-url-name">{e.emoji} {e.name}</span>
+              <span className="nfc-url-name">{e.name}</span>
               <code>{entryTagUrl(settings, e.id)}</code>
             </div>
           ))}
@@ -935,7 +945,7 @@ function NfcWriter({ entries, settings }) {
         return (
           <div key={e.id} className="nfc-entry-row">
             <div className="nfc-entry-top">
-              <span className="nfc-entry-emoji">{e.emoji}</span>
+              <span className="nfc-entry-initial" style={{ background: resolveTheme(e, settings).accent }}>{initialOf(e.name)}</span>
               <div className="nfc-entry-info">
                 <strong>{e.name}</strong>
                 <code>{entryTagUrl(settings, e.id)}</code>
@@ -1058,6 +1068,7 @@ function AdminPanel({ entries, settings, onSaveEntry, onDeleteEntry, onImportEnt
             <EntryForm
               initial={isNew ? null : editEntry}
               settings={settings}
+              collectionNames={[...new Set(entries.map(e => e.collection).filter(Boolean))].sort()}
               onSave={handleSave}
               onCancel={closeForm}
             />
@@ -1069,7 +1080,7 @@ function AdminPanel({ entries, settings, onSaveEntry, onDeleteEntry, onImportEnt
               {entries.map(e => (
                 <div key={e.id} className="entry-list-row">
                   <div className="elr-accent" style={{ background: resolveTheme(e, settings).accent }}/>
-                  <span className="elr-emoji">{e.emoji}</span>
+                  <span className="elr-initial" style={{ background: resolveTheme(e, settings).accent }}>{initialOf(e.name)}</span>
                   <div className="elr-info">
                     <strong>{e.name}</strong>
                     <small>{e.collection}{e.code ? ` · ${e.code}` : ''}</small>
