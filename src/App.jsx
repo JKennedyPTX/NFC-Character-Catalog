@@ -700,11 +700,13 @@ function EntryPage({ entry, settings, onEdit }) {
             </div>
           </section>
         )}
-        <section className="tag-info">
-          <div className="tag-label">NFC Tag URL</div>
-          <code className="tag-url">{entryTagUrl(settings, entry.id)}</code>
-          <QRCodeBlock url={entryTagUrl(settings, entry.id)} accent={theme.accent} name={name} />
-        </section>
+        {onEdit && (
+          <section className="tag-info">
+            <div className="tag-label">NFC Tag URL</div>
+            <code className="tag-url">{entryTagUrl(settings, entry.id)}</code>
+            <QRCodeBlock url={entryTagUrl(settings, entry.id)} accent={theme.accent} name={name} />
+          </section>
+        )}
         {onEdit && (
           <button className="edit-fab" style={{ background: theme.accent }} onClick={onEdit}>
             <Edit2 size={16}/> Edit
