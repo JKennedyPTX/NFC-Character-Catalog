@@ -40,6 +40,7 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 9. **NFC write tab** — on Chrome for Android (HTTPS) each entry shows a "Write tag" button; elsewhere a graceful "not available" notice with copyable URLs.
 10. **Multi-image gallery** — add 2+ images, reorder (first is Cover), save; confirm thumbnails + lightbox on the entry page and a count badge on the card.
 11. **Collection theming** — set a theme in the Collections tab, then enable "Use collection theme" on an entry; confirm it adopts the collection's colours.
+11b. **Theme gradients & patterns** — in any theme editor, add 2+ gradient colours and adjust the angle; confirm the card accent bar, no-image initial circle, and entry hero render the gradient (text, QR, pattern, and palette stay on the primary colour). Pick a background pattern and adjust its size and opacity sliders; confirm the change on the card and entry hero.
 12. **JSON import** — Settings → Import JSON to push an exported catalog into the backend.
 
 ## Recently added
@@ -48,10 +49,13 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 - **Token-link privacy** ✓ — only direct `#/e/<token>` links are public; no browsing or enumeration.
 - **Image storage** ✓ — entry images upload to a Supabase storage bucket.
 - **GitHub Pages auto-deploy** ✓ — Actions workflow builds and publishes on push.
+- **Multi-stop theme gradients** ✓ — themes can carry a multi-colour gradient on decorative surfaces (accent bar, initial circle, entry hero) while functional colours stay solid.
+- **Richer patterns** ✓ — more background pattern designs (stripes, checker, triangles, confetti, plus, etc.) with adjustable size and opacity.
 - **QR codes, NFC write, multi-image galleries, collection theming** ✓ — see earlier history.
 
 ## Suggestions for improvement
 
+- **Live theme preview** — add a small live "card + entry" preview directly in the theme editor (instead of just the preview strip), so gradients, patterns, size, and opacity can be designed against a realistic mock-up as you edit.
 - **Signed image URLs** — serve images via short-lived signed URLs from a private bucket instead of a public one, so images are as protected as entries.
 - **Published flag** — optionally mark some entries as openly listable on a public landing page while others stay token-only.
 - **Batch QR export** — generate a printable sheet of QR codes for every entry at once.

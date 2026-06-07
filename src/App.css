@@ -982,6 +982,35 @@ hr { border: none; border-top: 1px solid var(--rule); }
 /* ─── Theme Editor ───────────────────────────────────────────────────────── */
 .theme-editor { display: flex; flex-direction: column; gap: 12px; }
 
+/* Gradient editor */
+.gradient-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-md);
+}
+.gradient-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.gradient-head small { color: var(--ink-muted); font-weight: 400; }
+.gradient-stops { display: flex; flex-wrap: wrap; gap: 8px; }
+.gradient-stop {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+.gradient-stop input[type="color"] { width: 34px; height: 28px; padding: 0; border: none; cursor: pointer; }
+.gradient-hint { font-size: 0.78rem; color: var(--ink-muted); margin: 0; }
+
 .preset-row {
   display: flex;
   flex-wrap: wrap;

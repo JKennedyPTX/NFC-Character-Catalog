@@ -29,7 +29,10 @@ const THEME_PRESETS = [
   { name: 'Twilight',   accent: '#c464a0', tintHue: 315, pattern: 'dots'       },
 ]
 
-const PATTERNS = ['plain', 'dots', 'grid', 'diagonal', 'crosshatch', 'scallop', 'rings', 'chevron']
+const PATTERNS = [
+  'plain', 'dots', 'grid', 'diagonal', 'crosshatch', 'scallop', 'rings', 'chevron',
+  'stripes', 'hstripes', 'checker', 'triangles', 'confetti', 'plus'
+]
 
 const LINK_KINDS = ['link', 'wiki', 'video', 'shop', 'social', 'map', 'pdf']
 
@@ -107,6 +110,28 @@ function resolveTheme(entry, settings) {
   return entry?.theme || DEFAULT_THEME
 }
 
+// A theme's optional decorative gradient (>= 2 colour stops), or null.
+function themeGradient(theme) {
+  const g = theme?.gradient
+  const stops = Array.isArray(g?.stops) ? g.stops.filter(Boolean) : []
+  if (stops.length >= 2) return { angle: Number.isFinite(g.angle) ? g.angle : 135, stops }
+  return null
+}
+
+// Background for decorative surfaces: the gradient if set, otherwise the solid accent.
+function accentSurface(theme) {
+  const g = themeGradient(theme)
+  if (g) return `linear-gradient(${g.angle}deg, ${g.stops.join(', ')})`
+  return theme?.accent || DEFAULT_THEME.accent
+}
+
+// A low-alpha version of the gradient for large tinted backgrounds (or null).
+function accentSurfaceTint(theme, alphaHex = '22') {
+  const g = themeGradient(theme)
+  if (!g) return null
+  return `linear-gradient(${g.angle}deg, ${g.stops.map(s => s + alphaHex).join(', ')})`
+}
+
 // ─── Theming ──────────────────────────────────────────────────────────────────
 
 function hexToHsl(hex) {
@@ -170,32 +195,56 @@ function applyPalette(palette) {
 
 // ─── Pattern helpers ──────────────────────────────────────────────────────────
 
-export function patternBackground(pattern, accent, opacity = 0.08) {
-  const alpha = Math.round(opacity * 255).toString(16).padStart(2,'0')
+export function patternBackground(pattern, accent, opacity = 0.08, scale = 1) {
+  const alpha = Math.round(Math.max(0, Math.min(1, opacity)) * 255).toString(16).padStart(2,'0')
   const c = accent + alpha
+  const z = Math.max(0.3, scale || 1)
+  const s = n => `${(n * z).toFixed(1)}px`
   switch (pattern) {
     case 'dots':
-      return `radial-gradient(circle, ${c} 1.5px, transparent 1.5px) 0 0 / 16px 16px`
+      return `radial-gradient(circle, ${c} ${s(1.5)}, transparent ${s(1.5)}) 0 0 / ${s(16)} ${s(16)}`
     case 'grid':
       return [
-        `linear-gradient(${c} 1px, transparent 1px) 0 0 / 20px 20px`,
-        `linear-gradient(90deg, ${c} 1px, transparent 1px) 0 0 / 20px 20px`
+        `linear-gradient(${c} 1px, transparent 1px) 0 0 / ${s(20)} ${s(20)}`,
+        `linear-gradient(90deg, ${c} 1px, transparent 1px) 0 0 / ${s(20)} ${s(20)}`
       ].join(', ')
     case 'diagonal':
-      return `repeating-linear-gradient(45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / 14px 14px`
+      return `repeating-linear-gradient(45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / ${s(14)} ${s(14)}`
     case 'crosshatch':
       return [
-        `repeating-linear-gradient(45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / 14px 14px`,
-        `repeating-linear-gradient(-45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / 14px 14px`
+        `repeating-linear-gradient(45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / ${s(14)} ${s(14)}`,
+        `repeating-linear-gradient(-45deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / ${s(14)} ${s(14)}`
       ].join(', ')
     case 'scallop':
-      return `radial-gradient(circle at 50% 0%, transparent 58%, ${c} 58%, ${c} 62%, transparent 62%) 0 0 / 30px 22px`
+      return `radial-gradient(circle at 50% 0%, transparent 58%, ${c} 58%, ${c} 62%, transparent 62%) 0 0 / ${s(30)} ${s(22)}`
     case 'rings':
-      return `radial-gradient(circle, transparent 28%, ${c} 29%, ${c} 32%, transparent 33%) 0 0 / 28px 28px`
+      return `radial-gradient(circle, transparent 28%, ${c} 29%, ${c} 32%, transparent 33%) 0 0 / ${s(28)} ${s(28)}`
     case 'chevron':
       return [
-        `repeating-linear-gradient(135deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / 14px 14px`,
-        `repeating-linear-gradient(45deg,  ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / 14px 14px`
+        `repeating-linear-gradient(135deg, ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / ${s(14)} ${s(14)}`,
+        `repeating-linear-gradient(45deg,  ${c} 0, ${c} 1px, transparent 0, transparent 50%) 0 0 / ${s(14)} ${s(14)}`
+      ].join(', ')
+    case 'stripes':
+      return `repeating-linear-gradient(90deg, ${c} 0, ${c} 2px, transparent 2px, transparent ${s(12)}) 0 0 / auto`
+    case 'hstripes':
+      return `repeating-linear-gradient(0deg, ${c} 0, ${c} 2px, transparent 2px, transparent ${s(12)}) 0 0 / auto`
+    case 'checker':
+      return `conic-gradient(${c} 0.25turn, transparent 0.25turn 0.5turn, ${c} 0.5turn 0.75turn, transparent 0.75turn) 0 0 / ${s(20)} ${s(20)}`
+    case 'triangles':
+      return [
+        `linear-gradient(45deg, ${c} 25%, transparent 25%) 0 0 / ${s(18)} ${s(18)}`,
+        `linear-gradient(-45deg, ${c} 25%, transparent 25%) 0 0 / ${s(18)} ${s(18)}`
+      ].join(', ')
+    case 'confetti':
+      return [
+        `radial-gradient(circle, ${c} ${s(1.6)}, transparent ${s(2)}) 0 0 / ${s(22)} ${s(22)}`,
+        `radial-gradient(circle, ${c} ${s(1.6)}, transparent ${s(2)}) ${s(11)} ${s(11)} / ${s(22)} ${s(22)}`
+      ].join(', ')
+    case 'plus':
+      return [
+        `linear-gradient(${c} 2px, transparent 2px) 0 0 / ${s(18)} ${s(18)}`,
+        `linear-gradient(90deg, ${c} 2px, transparent 2px) 0 0 / ${s(18)} ${s(18)}`,
+        `linear-gradient(${c} 2px, transparent 2px) ${s(9)} ${s(9)} / ${s(18)} ${s(18)}`
       ].join(', ')
     default:
       return 'none'
@@ -351,6 +400,23 @@ function ImagePicker({ value, onChange }) {
 // ─── ThemeEditor ──────────────────────────────────────────────────────────────
 
 function ThemeEditor({ value, onChange }) {
+  const stops = value.gradient?.stops || []
+  const angle = Number.isFinite(value.gradient?.angle) ? value.gradient.angle : 135
+
+  function setGradient(next) { onChange({ ...value, gradient: next }) }
+  function addStop() {
+    const seed = stops.length ? stops[stops.length - 1] : (value.accent || '#4a7c59')
+    setGradient({ angle, stops: [...stops, seed] })
+  }
+  function updateStop(i, c) { setGradient({ angle, stops: stops.map((s, j) => j === i ? c : s) }) }
+  function removeStop(i) {
+    const ns = stops.filter((_, j) => j !== i)
+    setGradient(ns.length ? { angle, stops: ns } : undefined)
+  }
+  function setAngle(a) { setGradient({ angle: a, stops }) }
+
+  const hasGradient = themeGradient(value)
+
   return (
     <div className="theme-editor">
       <div className="preset-row">
@@ -361,12 +427,12 @@ function ThemeEditor({ value, onChange }) {
             title={p.name}
             className={`preset-dot ${value.accent === p.accent ? 'active' : ''}`}
             style={{ background: p.accent }}
-            onClick={() => onChange({ ...p })}
+            onClick={() => onChange({ ...value, ...p })}
           />
         ))}
       </div>
       <div className="theme-row">
-        <label>Accent
+        <label>Primary colour
           <input type="color" value={value.accent}
             onChange={e => onChange({ ...value, accent: e.target.value })} />
         </label>
@@ -374,6 +440,28 @@ function ThemeEditor({ value, onChange }) {
           <input type="range" min="0" max="360" value={value.tintHue}
             onChange={e => onChange({ ...value, tintHue: +e.target.value })} />
         </label>
+      </div>
+      <div className="gradient-editor">
+        <div className="gradient-head">
+          <span>Gradient <small>(decorative · optional)</small></span>
+          <button type="button" className="add-link-btn" onClick={addStop}><Plus size={12}/> Add colour</button>
+        </div>
+        {stops.length > 0 && (
+          <div className="gradient-stops">
+            {stops.map((s, i) => (
+              <div key={i} className="gradient-stop">
+                <input type="color" value={s} onChange={e => updateStop(i, e.target.value)} />
+                <button type="button" className="icon-btn danger" onClick={() => removeStop(i)}><X size={12}/></button>
+              </div>
+            ))}
+          </div>
+        )}
+        {stops.length === 1 && <p className="gradient-hint">Add at least 2 colours to form a gradient.</p>}
+        {stops.length >= 2 && (
+          <label className="range-label">Angle ({angle}°)
+            <input type="range" min="0" max="360" value={angle} onChange={e => setAngle(+e.target.value)} />
+          </label>
+        )}
       </div>
       <div className="pattern-grid">
         {PATTERNS.map(p => (
@@ -391,10 +479,28 @@ function ThemeEditor({ value, onChange }) {
           >{p}</button>
         ))}
       </div>
+      {value.pattern && value.pattern !== 'plain' && (
+        <div className="theme-row">
+          <label className="range-label">Pattern size ({(value.patternScale ?? 1).toFixed(1)}×)
+            <input type="range" min="0.5" max="2.5" step="0.1" value={value.patternScale ?? 1}
+              onChange={e => onChange({ ...value, patternScale: +e.target.value })} />
+          </label>
+          <label className="range-label">Pattern opacity ({Math.round((value.patternOpacity ?? 0.06) * 100)}%)
+            <input type="range" min="0" max="0.4" step="0.01" value={value.patternOpacity ?? 0.06}
+              onChange={e => onChange({ ...value, patternOpacity: +e.target.value })} />
+          </label>
+        </div>
+      )}
       <div className="theme-preview-strip"
         style={{
-          background: patternBackground(value.pattern, value.accent, 0.1),
-          borderTop: `4px solid ${value.accent}`
+          background: [
+            value.pattern && value.pattern !== 'plain'
+              ? patternBackground(value.pattern, hasGradient ? '#ffffff' : value.accent, Math.max(value.patternOpacity ?? 0.1, 0.1), value.patternScale ?? 1)
+              : null,
+            hasGradient ? accentSurface(value) : 'var(--card)'
+          ].filter(b => b && b !== 'none').join(', '),
+          borderTop: `4px solid ${value.accent}`,
+          color: hasGradient ? '#fff' : undefined
         }}>
         Preview
       </div>
@@ -505,21 +611,21 @@ function SpecimenCard({ entry, settings, onClick }) {
   const { name, images, tagline, collection } = entry
   const theme = resolveTheme(entry, settings)
   const cover = images?.[0]
-  const bg = patternBackground(theme.pattern, theme.accent, 0.06)
+  const bg = patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.06, theme.patternScale ?? 1)
   return (
     <div
       className="specimen-card"
       onClick={onClick}
       style={{ '--entry-accent': theme.accent, background: bg !== 'none' ? bg : undefined }}
     >
-      <div className="card-accent-bar" style={{ background: theme.accent }} />
+      <div className="card-accent-bar" style={{ background: accentSurface(theme) }} />
       <div className="card-body">
         {cover
           ? <div className="card-image-wrap">
               <img src={cover} alt={name} className="card-image" />
               {images.length > 1 && <span className="card-img-count">{images.length}</span>}
             </div>
-          : <div className="card-initial" style={{ background: theme.accent }}>{initialOf(name)}</div>}
+          : <div className="card-initial" style={{ background: accentSurface(theme) }}>{initialOf(name)}</div>}
         <div className="card-info">
           <div className="card-name">{name}</div>
           {tagline && <div className="card-tagline">{tagline}</div>}
@@ -614,14 +720,14 @@ function QRCodeBlock({ url, accent, name }) {
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
 
-function Gallery({ images, name, accent }) {
+function Gallery({ images, name, accent, surface }) {
   const [index, setIndex] = useState(0)
   const [lightbox, setLightbox] = useState(false)
   const safeIndex = Math.min(index, Math.max(images.length - 1, 0))
 
   if (!images || images.length === 0) {
     return (
-      <div className="entry-image-plate" style={{ borderColor: accent, background: accent }}>
+      <div className="entry-image-plate" style={{ borderColor: accent, background: surface || accent }}>
         <div className="entry-initial">{initialOf(name)}</div>
       </div>
     )
@@ -672,10 +778,13 @@ function EntryPage({ entry, settings, onEdit }) {
   return (
     <div className="entry-page">
       <div className="entry-hero" style={{
-        background: `linear-gradient(150deg, ${theme.accent}18 0%, ${theme.accent}38 100%)`,
+        background: [
+          patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.08, theme.patternScale ?? 1),
+          accentSurfaceTint(theme) || `linear-gradient(150deg, ${theme.accent}18 0%, ${theme.accent}38 100%)`
+        ].filter(b => b && b !== 'none').join(', '),
         borderBottom: `4px solid ${theme.accent}`
       }}>
-        <Gallery images={images} name={name} accent={theme.accent} />
+        <Gallery images={images} name={name} accent={theme.accent} surface={accentSurface(theme)} />
         <div className="entry-hero-text">
           {code && <div className="entry-code">{code}</div>}
           <h1 className="entry-name">{name}</h1>
