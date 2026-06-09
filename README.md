@@ -41,6 +41,7 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 10. **Multi-image gallery** — add 2+ images, reorder (first is Cover), save; confirm thumbnails + lightbox on the entry page and a count badge on the card.
 11. **Collection theming** — set a theme in the Collections tab, then enable "Use collection theme" on an entry; confirm it adopts the collection's colours.
 11b. **Theme gradients & patterns** — in any theme editor, add 2+ gradient colours and adjust the angle; confirm the whole entry card renders the gradient (with the pattern overlaid in the primary colour and white text), and the entry hero shows it too. Text, QR, pattern colour, and palette stay on the primary colour. Pick a background pattern and adjust its size and opacity sliders; confirm the change on the card and entry hero. Adding a cover photo should leave the gradient clearly visible around it. Card text auto-switches between white and dark based on the gradient's brightness for legibility.
+11c. **Card background photo** — in a theme editor, upload a "Card background photo"; confirm the entry card uses it full-bleed with a dark scrim and white text, and the cover-image circle still shows on top. Set it on a collection theme and confirm inheriting entries' cards use it. Remove it to fall back to the gradient.
 12. **JSON import** — Settings → Import JSON to push an exported catalog into the backend.
 
 ## Recently added
@@ -51,6 +52,7 @@ The `dist/` folder is a static site. The included GitHub Actions workflow (`.git
 - **GitHub Pages auto-deploy** ✓ — Actions workflow builds and publishes on push.
 - **Multi-stop theme gradients** ✓ — themes can carry a multi-colour gradient on decorative surfaces (accent bar, initial circle, entry hero) while functional colours stay solid.
 - **Richer patterns** ✓ — more background pattern designs (stripes, checker, triangles, confetti, plus, etc.) with adjustable size and opacity.
+- **Card background photos** ✓ — a theme can carry a background photo for the entry card (full-bleed with a dark scrim + white text), settable per entry or per collection.
 - **QR codes, NFC write, multi-image galleries, collection theming** ✓ — see earlier history.
 
 ## Suggestions for improvement

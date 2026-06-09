@@ -421,6 +421,19 @@ function ImagePicker({ value, onChange }) {
 function ThemeEditor({ value, onChange }) {
   const stops = value.gradient?.stops || []
   const angle = Number.isFinite(value.gradient?.angle) ? value.gradient.angle : 135
+  const [bgBusy, setBgBusy] = useState(false)
+
+  async function handleBgFile(e) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setBgBusy(true)
+    try {
+      const dataUrl = await compressImage(f)
+      const url = await uploadImageDataUrl(dataUrl)
+      onChange({ ...value, bgImage: url })
+    } catch (err) { alert('Upload failed: ' + (err?.message || err)) }
+    finally { setBgBusy(false); e.target.value = '' }
+  }
 
   function setGradient(next) { onChange({ ...value, gradient: next }) }
   function addStop() {
@@ -510,8 +523,30 @@ function ThemeEditor({ value, onChange }) {
           </label>
         </div>
       )}
+      <div className="gradient-editor">
+        <div className="gradient-head">
+          <span>Card background photo <small>(optional)</small></span>
+        </div>
+        {value.bgImage ? (
+          <div className="bg-photo-row">
+            <img src={value.bgImage} className="bg-photo-thumb" alt="" />
+            <button type="button" className="clear-img-btn" onClick={() => onChange({ ...value, bgImage: undefined })}>
+              Remove photo
+            </button>
+          </div>
+        ) : (
+          <label className="bg-photo-upload">
+            <Upload size={15}/> {bgBusy ? 'Uploading…' : 'Upload background photo'}
+            <input type="file" accept="image/*" onChange={handleBgFile} style={{ display: 'none' }} />
+          </label>
+        )}
+      </div>
       <div className="theme-preview-strip"
-        style={{
+        style={value.bgImage ? {
+          background: `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.58)), url("${value.bgImage}") center / cover no-repeat`,
+          borderTop: `4px solid ${value.accent}`,
+          color: '#fff'
+        } : {
           background: [
             value.pattern && value.pattern !== 'plain'
               ? patternBackground(value.pattern, hasGradient ? '#ffffff' : value.accent, Math.max(value.patternOpacity ?? 0.1, 0.1), value.patternScale ?? 1)
@@ -630,14 +665,26 @@ function SpecimenCard({ entry, settings, onClick }) {
   const { name, images, tagline, collection } = entry
   const theme = resolveTheme(entry, settings)
   const cover = images?.[0]
-  // The whole card is the gradient, with the pattern (in the primary colour) layered on top.
-  const pattern = patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.12, theme.patternScale ?? 1)
-  const cardBg = [pattern !== 'none' ? pattern : null, accentSurface(theme)].filter(Boolean).join(', ')
+  // A theme can carry a background photo; otherwise the card is the gradient
+  // with the pattern (in the primary colour) layered on top.
+  let cardClass, cardStyle
+  if (theme.bgImage) {
+    cardClass = 'specimen-card gradient-card has-bg-photo'
+    cardStyle = {
+      '--entry-accent': theme.accent,
+      background: `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.58)), url("${theme.bgImage}") center / cover no-repeat`,
+    }
+  } else {
+    const pattern = patternBackground(theme.pattern, theme.accent, theme.patternOpacity ?? 0.12, theme.patternScale ?? 1)
+    const cardBg = [pattern !== 'none' ? pattern : null, accentSurface(theme)].filter(Boolean).join(', ')
+    cardClass = `specimen-card gradient-card ${isLightSurface(theme) ? 'light-surface' : ''}`
+    cardStyle = { '--entry-accent': theme.accent, background: cardBg }
+  }
   return (
     <div
-      className={`specimen-card gradient-card ${isLightSurface(theme) ? 'light-surface' : ''}`}
+      className={cardClass}
       onClick={onClick}
-      style={{ '--entry-accent': theme.accent, background: cardBg }}
+      style={cardStyle}
     >
       <div className="card-body">
         {cover
